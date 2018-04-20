@@ -25,7 +25,7 @@ Full documentation available at http://gliderlabs.com/registrator
 
 Get the latest release, master, or any version of Registrator via [Docker Hub](https://registry.hub.docker.com/u/gliderlabs/registrator/):
 
-	$ docker pull gliderlabs/registrator:latest
+	$ docker pull henryse/registrator:latest
 
 Latest tag always points to the latest release. There is also a `:master` tag
 and version tags to pin to specific releases.
@@ -42,7 +42,7 @@ Guide. Typically, running Registrator looks like this:
         --name=registrator \
         --net=host \
         --volume=/var/run/docker.sock:/tmp/docker.sock \
-        gliderlabs/registrator:latest \
+        henryse/registrator:latest \
           consul://localhost:8500
 
 ## CLI Options

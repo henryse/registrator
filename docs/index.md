@@ -18,7 +18,7 @@ supports pluggable service registries, which currently includes
 
 Get the latest release, master, or any version of Registrator via [Docker Hub](https://registry.hub.docker.com/u/gliderlabs/registrator/):
 
-	$ docker pull gliderlabs/registrator:latest
+	$ docker pull henryse/registrator:latest
 
 Latest tag always points to the latest release. There is also a `:master` tag
 and version tags to pin to specific releases.
@@ -34,13 +34,13 @@ looks like this:
         --name=registrator \
         --net=host \
         --volume=/var/run/docker.sock:/tmp/docker.sock \
-        gliderlabs/registrator:latest \
+        henryse/registrator:latest \
           consul://localhost:8500
 
 ## Contributing
 
 Pull requests are welcome! We recommend getting feedback before starting by
-opening a [GitHub issue](https://github.com/gliderlabs/registrator/issues) or
+opening a [GitHub issue](https://github.com/henryse/registrator/issues) or
 discussing in [Slack](http://glider-slackin.herokuapp.com/).
 
 Also check out our Developer Guide on [Contributing Backends](dev/backends.md)

@@ -8,10 +8,9 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
-
 	etcd2 "github.com/coreos/go-etcd/etcd"
-	"github.com/gliderlabs/registrator/bridge"
-	etcd "gopkg.in/coreos/go-etcd.v0/etcd"
+	"github.com/henryse/registrator/bridge"
+	"gopkg.in/coreos/go-etcd.v0/etcd"
 )
 
 func init() {
@@ -82,36 +81,131 @@ func (r *EtcdAdapter) syncEtcdCluster() {
 	}
 }
 
-func (r *EtcdAdapter) Register(service *bridge.Service) error {
-	r.syncEtcdCluster()
+func (r *EtcdAdapter) servicePath(service *bridge.Service) string {
+	return  r.path + "/" + service.Name +"/services/" + service.ID
+}
 
-	path := r.path + "/" + service.Name + "/" + service.ID
-	port := strconv.Itoa(service.Port)
-	addr := net.JoinHostPort(service.IP, port)
+func (r *EtcdAdapter) setValue(service *bridge.Service, key string, value string) error {
+	r.syncEtcdCluster()
+	path := r.servicePath(service) + "/" + key
 
 	var err error
 	if r.client != nil {
-		_, err = r.client.Set(path, addr, uint64(service.TTL))
+		_, err = r.client.Set(path, value, uint64(service.TTL))
 	} else {
-		_, err = r.client2.Set(path, addr, uint64(service.TTL))
+		_, err = r.client2.Set(path, value, uint64(service.TTL))
 	}
 
 	if err != nil {
 		log.Println("etcd: failed to register service:", err)
 	}
+
 	return err
+}
+
+func (r *EtcdAdapter) setTags(service *bridge.Service) error {
+	r.syncEtcdCluster()
+	path := r.servicePath(service) + "/tags"
+
+	var err error
+	var returnErr error
+	for index, element := range service.Tags {
+		if r.client != nil {
+			_, err = r.client.Set(path + "/" + strconv.Itoa(index), element, uint64(service.TTL))
+		} else {
+			_, err = r.client2.Set(path + "/" + strconv.Itoa(index), element, uint64(service.TTL))
+		}
+
+		if err != nil {
+			log.Println("etcd: failed to register service:", err)
+			returnErr = err
+		}
+	}
+
+	return returnErr
+}
+
+func (r *EtcdAdapter) setAttrs(service *bridge.Service) error {
+	r.syncEtcdCluster()
+	path := r.servicePath(service) + "/Attrs"
+
+	var err error
+	var returnErr error
+	for key, value := range service.Attrs {
+		if r.client != nil {
+			_, err = r.client.Set(path + "/" + key, value, uint64(service.TTL))
+		} else {
+			_, err = r.client2.Set(path + "/" + key, value, uint64(service.TTL))
+		}
+
+		if err != nil {
+			log.Println("etcd: failed to register service:", err)
+			returnErr = err
+		}
+	}
+
+	return returnErr
+}
+
+func (r *EtcdAdapter) Register(service *bridge.Service) error {
+	var err error
+	var returnErr error
+
+	err = r.setValue(service, "address", net.JoinHostPort(service.IP, strconv.Itoa(service.Port)))
+
+	if err != nil {
+		returnErr = err
+	}
+
+	err = r.setValue(service, "port_type", service.Origin.PortType)
+
+	if err != nil {
+		returnErr = err
+	}
+
+	err = r.setValue(service, "host_port", service.Origin.HostPort)
+
+	if err != nil {
+		returnErr = err
+	}
+
+	err = r.setValue(service, "host_ip", service.Origin.HostIP)
+
+	if err != nil {
+		returnErr = err
+	}
+
+	err = r.setValue(service, "exposed_port", service.Origin.ExposedPort)
+
+	if err != nil {
+		returnErr = err
+	}
+
+	err = r.setValue(service, "exposed_ip", service.Origin.ExposedIP)
+
+	if err != nil {
+		returnErr = err
+	}
+
+	err = r.setTags(service)
+
+	if err != nil {
+		returnErr = err
+	}
+
+	err = r.setAttrs(service)
+
+	return returnErr
 }
 
 func (r *EtcdAdapter) Deregister(service *bridge.Service) error {
 	r.syncEtcdCluster()
 
-	path := r.path + "/" + service.Name + "/" + service.ID
-
 	var err error
 	if r.client != nil {
-		_, err = r.client.Delete(path, false)
+		_, err = r.client.Delete(r.servicePath(service), true)
 	} else {
-		_, err = r.client2.Delete(path, false)
+		_, err = r.client2.Delete(r.servicePath(service), true)
 	}
 
 	if err != nil {
@@ -127,3 +221,4 @@ func (r *EtcdAdapter) Refresh(service *bridge.Service) error {
 func (r *EtcdAdapter) Services() ([]*bridge.Service, error) {
 	return []*bridge.Service{}, nil
 }
+

@@ -127,7 +127,7 @@ func (r *EtcdAdapter) setTags(service *bridge.Service) error {
 
 func (r *EtcdAdapter) setAttrs(service *bridge.Service) error {
 	r.syncEtcdCluster()
-	path := r.servicePath(service) + "/Attrs"
+	path := r.servicePath(service) + "/attrs"
 
 	var err error
 	var returnErr error

@@ -82,7 +82,7 @@ func (r *EtcdAdapter) syncEtcdCluster() {
 }
 
 func (r *EtcdAdapter) servicePath(service *bridge.Service) string {
-	return  r.path + "/" + service.Name +"/services/" + service.ID
+	return  r.path + "/" + service.Name +"/" + service.ID
 }
 
 func (r *EtcdAdapter) setValue(service *bridge.Service, key string, value string) error {

@@ -118,14 +118,21 @@ Using the prefix from the Registry URI, service definitions are stored as:
 
 	etcd://<address>:<port>/<prefix>
 
-Etcd works similar to Consul KV, except supports service TTLs. It also currently
-doesn't support service attributes/tags.
+Etcd works similar to Consul KV, except supports service TTLs.
 
 If no address and port is specified, it will default to `127.0.0.1:2379`.
 
 Using the prefix from the Registry URI, service definitions are stored as:
 
-	<prefix>/<service-name>/<service-id> = <ip>:<port>
+	<prefix>/<service-name>/<service-id>/<host_ip> = <ip>   - Hosts IP Address
+	<prefix>/<service-name>/<service-id>/<host_port> = <host_port> - host port
+	<prefix>/<service-name>/<service-id>/<exposed_port> = <exposed_port> - Docker Exposed Port
+	<prefix>/<service-name>/<service-id>/<exposed_ip> = <exposed_ip> - Docker Exposed IP
+	<prefix>/<service-name>/<service-id>/<tags> = <tags> - Directory of Tags, see above.
+	<prefix>/<service-name>/<service-id>/<attrs> = <attrs> - Directory of Attributes
+	<prefix>/<service-name>/<service-id>/<address> = <ip>:<port>
+	<prefix>/<service-name>/<service-id>/<port_type> = <port_type> - tcp, udp etc...
+
 
 ## SkyDNS 2
 

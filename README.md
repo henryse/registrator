@@ -1,7 +1,7 @@
 
 >
-> WARNING: This version of Registrator *breaks* ETCD backwards compatibility functionality by adding support for Tags and Attrs
-> Use at your own risk!
+> WARNING: This version of Registrator *breaks* ETCD backwards compatibility functionality
+> by adding support for Tags and Attrs and much more, see documentation.
 >
 
 # Registrator

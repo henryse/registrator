@@ -1,6 +1,8 @@
 
+**Status:** Production
+
 >
-> WARNING: This version of Registrator *breaks* ETCD backwards compatibility functionality
+> **WARNIN:** This version of Registrator *breaks* ETCD backwards compatibility functionality
 > by adding support for Tags and Attrs and much more, see documentation.
 >
 

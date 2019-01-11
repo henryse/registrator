@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	etcd2 "github.com/coreos/go-etcd/etcd"
-	"github.com/gliderlabs/registrator/bridge"
+	"github.com/henryse/registrator/bridge"
 	etcd "gopkg.in/coreos/go-etcd.v0/etcd"
 )
 
@@ -28,6 +28,8 @@ func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 		urls = append(urls, "http://127.0.0.1:2379")
 	}
 
+	log.Printf("etcd: retrieving version from %s\n", urls[0]+"/version")
+
 	res, err := http.Get(urls[0] + "/version")
 	if err != nil {
 		log.Fatal("etcd: error retrieving version", err)
@@ -35,6 +37,8 @@ func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
+
+	log.Printf("etcd: found version: %s\n", string(body))
 
 	if match, _ := regexp.Match("0\\.4\\.*", body); match == true {
 		log.Println("etcd: using v0 client")

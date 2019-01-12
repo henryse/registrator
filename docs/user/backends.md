@@ -133,25 +133,6 @@ Using the prefix from the Registry URI, service definitions are stored as:
 	<prefix>/<service-name>/<service-id>/<address> = <ip>:<port>
 	<prefix>/<service-name>/<service-id>/<port_type> = <port_type> - tcp, udp etc...
 
-
-## SkyDNS 2
-
-	skydns2://<address>:<port>/<domain>
-
-SkyDNS 2 uses etcd, so this backend writes service definitions in a format compatible with SkyDNS 2.
-The path may not be omitted and must be a valid DNS domain for SkyDNS.
-
-If no address and port is specified, it will default to `127.0.0.1:2379`.
-
-Using a Registry URI with the domain `cluster.local`, service definitions are stored as:
-
-	/skydns/local/cluster/<service-name>/<service-id> = {"host":"<ip>","port":<port>}
-
-SkyDNS requires the service ID to be a valid DNS hostname, so this backend requires containers to
-override service ID to a valid DNS name. Example:
-
-	$ docker run -d --name redis-1 -e SERVICE_ID=redis-1 -p 6379:6379 redis
-
 ## Zookeeper Store
 
 The Zookeeper backend lets you publish ephemeral znodes into zookeeper. This mode is enabled by specifying a zookeeper path.  The zookeeper backend supports publishing a json znode body complete with defined service attributes/tags as well as the service name and container id. Example URIs:

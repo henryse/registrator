@@ -10,7 +10,7 @@ import (
 	"time"
 
 	dockerapi "github.com/fsouza/go-dockerclient"
-	"github.com/henryse/go-registrator-pkg/usage"
+	"github.com/gliderlabs/pkg/usage"
 	"github.com/henryse/registrator/bridge"
 )
 

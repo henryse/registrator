@@ -26,15 +26,15 @@ func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 		log.Fatal("skydns2: dns domain required e.g.: skydns2://<host>/<domain>")
 	}
 
-	return &Skydns2Adapter{client: etcd.NewClient(urls), path: domainPath(uri.Path[1:])}
+	return &Adapter{client: etcd.NewClient(urls), path: domainPath(uri.Path[1:])}
 }
 
-type Skydns2Adapter struct {
+type Adapter struct {
 	client *etcd.Client
 	path   string
 }
 
-func (r *Skydns2Adapter) Ping() error {
+func (r *Adapter) Ping() error {
 	rr := etcd.NewRawRequest("GET", "version", nil, nil)
 	_, err := r.client.SendRequest(rr)
 	if err != nil {
@@ -43,7 +43,7 @@ func (r *Skydns2Adapter) Ping() error {
 	return nil
 }
 
-func (r *Skydns2Adapter) Register(service *bridge.Service) error {
+func (r *Adapter) Register(service *bridge.Service) error {
 	port := strconv.Itoa(service.Port)
 	record := `{"host":"` + service.IP + `","port":` + port + `}`
 	_, err := r.client.Set(r.servicePath(service), record, uint64(service.TTL))
@@ -53,7 +53,7 @@ func (r *Skydns2Adapter) Register(service *bridge.Service) error {
 	return err
 }
 
-func (r *Skydns2Adapter) Deregister(service *bridge.Service) error {
+func (r *Adapter) Deregister(service *bridge.Service) error {
 	_, err := r.client.Delete(r.servicePath(service), false)
 	if err != nil {
 		log.Println("skydns2: failed to register service:", err)
@@ -61,15 +61,15 @@ func (r *Skydns2Adapter) Deregister(service *bridge.Service) error {
 	return err
 }
 
-func (r *Skydns2Adapter) Refresh(service *bridge.Service) error {
+func (r *Adapter) Refresh(service *bridge.Service) error {
 	return r.Register(service)
 }
 
-func (r *Skydns2Adapter) Services() ([]*bridge.Service, error) {
+func (r *Adapter) Services() ([]*bridge.Service, error) {
 	return []*bridge.Service{}, nil
 }
 
-func (r *Skydns2Adapter) servicePath(service *bridge.Service) string {
+func (r *Adapter) servicePath(service *bridge.Service) string {
 	return r.path + "/" + service.Name + "/" + service.ID
 }
 

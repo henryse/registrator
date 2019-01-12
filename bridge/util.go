@@ -8,6 +8,7 @@ import (
 	dockerapi "github.com/fsouza/go-dockerclient"
 )
 
+//noinspection GoUnusedFunction
 func retry(fn func() error) error {
 	return backoff.Retry(fn, backoff.NewExponentialBackOff())
 }

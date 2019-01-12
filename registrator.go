@@ -31,6 +31,7 @@ var retryAttempts = flag.Int("retry-attempts", 0, "Max retry attempts to establi
 var retryInterval = flag.Int("retry-interval", 2000, "Interval (in millisecond) between retry-attempts.")
 var cleanup = flag.Bool("cleanup", false, "Remove dangling services")
 
+//noinspection GoUnusedFunction
 func getopt(name, def string) string {
 	if env := os.Getenv(name); env != "" {
 		return env
@@ -52,8 +53,8 @@ func main() {
 	log.Printf("Starting registrator %s ...", Version)
 
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "  %s [options] <registry URI>\n\n", os.Args[0])
+		_, _ = fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+		_, _ = fmt.Fprintf(os.Stderr, "  %s [options] <registry URI>\n\n", os.Args[0])
 		flag.PrintDefaults()
 	}
 
@@ -61,11 +62,11 @@ func main() {
 
 	if flag.NArg() != 1 {
 		if flag.NArg() == 0 {
-			fmt.Fprint(os.Stderr, "Missing required argument for registry URI.\n\n")
+			_, _ = fmt.Fprint(os.Stderr, "Missing required argument for registry URI.\n\n")
 		} else {
-			fmt.Fprintln(os.Stderr, "Extra unparsed arguments:")
-			fmt.Fprintln(os.Stderr, " ", strings.Join(flag.Args()[1:], " "))
-			fmt.Fprint(os.Stderr, "Options should come before the registry URI argument.\n\n")
+			_, _ = fmt.Fprintln(os.Stderr, "Extra unparsed arguments:")
+			_, _ = fmt.Fprintln(os.Stderr, " ", strings.Join(flag.Args()[1:], " "))
+			_, _ = fmt.Fprint(os.Stderr, "Options should come before the registry URI argument.\n\n")
 		}
 		flag.Usage()
 		os.Exit(2)
@@ -87,7 +88,7 @@ func main() {
 
 	dockerHost := os.Getenv("DOCKER_HOST")
 	if dockerHost == "" {
-		os.Setenv("DOCKER_HOST", "unix:///tmp/docker.sock")
+		_ = os.Setenv("DOCKER_HOST", "unix:///tmp/docker.sock")
 	}
 
 	docker, err := dockerapi.NewClientFromEnv()

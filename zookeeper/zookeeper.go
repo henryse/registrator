@@ -18,7 +18,7 @@ func init() {
 type Factory struct{}
 
 func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
-	c, _, err := zk.Connect([]string{uri.Host}, (time.Second * 10))
+	c, _, err := zk.Connect([]string{uri.Host}, time.Second*10)
 	if err != nil {
 		panic(err)
 	}
@@ -27,7 +27,7 @@ func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 		log.Println("zookeeper: error checking if base path exists:", err)
 	}
 	if !exists {
-		c.Create(uri.Path, []byte{}, 0, zk.WorldACL(zk.PermAll))
+		_, _ = c.Create(uri.Path, []byte{}, 0, zk.WorldACL(zk.PermAll))
 	}
 	return &ZkAdapter{client: c, path: uri.Path}
 }

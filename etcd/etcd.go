@@ -1,17 +1,13 @@
 package etcd
 
 import (
-	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
 	"net/url"
-	"regexp"
 	"strconv"
 
-	etcd2 "github.com/coreos/go-etcd/etcd"
 	"github.com/henryse/registrator/bridge"
-	etcd "gopkg.in/coreos/go-etcd.v0/etcd"
+	"gopkg.in/coreos/go-etcd.v2/etcd"
 )
 
 func init() {
@@ -28,44 +24,20 @@ func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 		urls = append(urls, "http://127.0.0.1:2379")
 	}
 
-	log.Printf("etcd: retrieving version from %s\n", urls[0]+"/version")
-
-	res, err := http.Get(urls[0] + "/version")
-	if err != nil {
-		log.Fatal("etcd: error retrieving version", err)
-	}
-
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-
-	log.Printf("etcd: found version: %s\n", string(body))
-
-	if match, _ := regexp.Match("0\\.4\\.*", body); match == true {
-		log.Println("etcd: using v0 client")
-		return &EtcdAdapter{client: etcd.NewClient(urls), path: uri.Path}
-	}
-
-	return &EtcdAdapter{client2: etcd2.NewClient(urls), path: uri.Path}
+	return &Adapter{client: etcd.NewClient(urls), path: uri.Path}
 }
 
-type EtcdAdapter struct {
-	client  *etcd.Client
-	client2 *etcd2.Client
+type Adapter struct {
+	client *etcd.Client
 
 	path string
 }
 
-func (r *EtcdAdapter) Ping() error {
+func (r *Adapter) Ping() error {
 	r.syncEtcdCluster()
 
-	var err error
-	if r.client != nil {
-		rr := etcd.NewRawRequest("GET", "version", nil, nil)
-		_, err = r.client.SendRequest(rr)
-	} else {
-		rr := etcd2.NewRawRequest("GET", "version", nil, nil)
-		_, err = r.client2.SendRequest(rr)
-	}
+	rr := etcd.NewRawRequest("GET", "version", nil, nil)
+	_, err := r.client.SendRequest(rr)
 
 	if err != nil {
 		return err
@@ -73,20 +45,16 @@ func (r *EtcdAdapter) Ping() error {
 	return nil
 }
 
-func (r *EtcdAdapter) syncEtcdCluster() {
+func (r *Adapter) syncEtcdCluster() {
 	var result bool
-	if r.client != nil {
-		result = r.client.SyncCluster()
-	} else {
-		result = r.client2.SyncCluster()
-	}
+	result = r.client.SyncCluster()
 
 	if !result {
 		log.Println("etcd: sync cluster was unsuccessful")
 	}
 }
 
-func (r *EtcdAdapter) Register(service *bridge.Service) error {
+func (r *Adapter) Register(service *bridge.Service) error {
 	r.syncEtcdCluster()
 
 	path := r.path + "/" + service.Name + "/" + service.ID
@@ -94,11 +62,7 @@ func (r *EtcdAdapter) Register(service *bridge.Service) error {
 	addr := net.JoinHostPort(service.IP, port)
 
 	var err error
-	if r.client != nil {
-		_, err = r.client.Set(path, addr, uint64(service.TTL))
-	} else {
-		_, err = r.client2.Set(path, addr, uint64(service.TTL))
-	}
+	_, err = r.client.Set(path, addr, uint64(service.TTL))
 
 	if err != nil {
 		log.Println("etcd: failed to register service:", err)
@@ -106,17 +70,13 @@ func (r *EtcdAdapter) Register(service *bridge.Service) error {
 	return err
 }
 
-func (r *EtcdAdapter) Deregister(service *bridge.Service) error {
+func (r *Adapter) Deregister(service *bridge.Service) error {
 	r.syncEtcdCluster()
 
 	path := r.path + "/" + service.Name + "/" + service.ID
 
 	var err error
-	if r.client != nil {
-		_, err = r.client.Delete(path, false)
-	} else {
-		_, err = r.client2.Delete(path, false)
-	}
+	_, err = r.client.Delete(path, false)
 
 	if err != nil {
 		log.Println("etcd: failed to deregister service:", err)
@@ -124,10 +84,10 @@ func (r *EtcdAdapter) Deregister(service *bridge.Service) error {
 	return err
 }
 
-func (r *EtcdAdapter) Refresh(service *bridge.Service) error {
+func (r *Adapter) Refresh(service *bridge.Service) error {
 	return r.Register(service)
 }
 
-func (r *EtcdAdapter) Services() ([]*bridge.Service, error) {
+func (r *Adapter) Services() ([]*bridge.Service, error) {
 	return []*bridge.Service{}, nil
 }
